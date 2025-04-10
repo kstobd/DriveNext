@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.drivenext.domain.model.User
+import java.util.Date
 
 /**
  * Room entity representing a user in the database
@@ -18,7 +19,12 @@ data class UserEntity(
     val name: String,
     val email: String,
     val phoneNumber: String,
-    val password: String
+    val password: String,
+    val firstName: String = "",
+    val lastName: String = "",
+    val middleName: String = "",
+    val birthDate: Date? = null,
+    val gender: String = ""
 ) {
     /**
      * Convert entity to domain model
@@ -29,7 +35,12 @@ data class UserEntity(
             name = name,
             email = email,
             phoneNumber = phoneNumber,
-            password = password
+            password = password,
+            firstName = firstName,
+            lastName = lastName,
+            middleName = middleName,
+            birthDate = birthDate,
+            gender = gender
         )
     }
 
@@ -43,7 +54,12 @@ data class UserEntity(
                 name = user.name,
                 email = user.email,
                 phoneNumber = user.phoneNumber,
-                password = user.password
+                password = user.password,
+                firstName = user.firstName,
+                lastName = user.lastName,
+                middleName = user.middleName,
+                birthDate = user.birthDate,
+                gender = user.gender
             )
         }
     }

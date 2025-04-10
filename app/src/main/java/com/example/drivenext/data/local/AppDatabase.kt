@@ -18,7 +18,7 @@ import com.example.drivenext.utils.DateConverter
  */
 @Database(
     entities = [UserEntity::class, CarEntity::class, BookingEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(DateConverter::class)

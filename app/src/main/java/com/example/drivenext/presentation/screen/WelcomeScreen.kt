@@ -33,6 +33,7 @@ import com.example.drivenext.ui.theme.DriveNextTheme
  * Welcome screen that displays a splash image and welcome text
  * before navigating to the login screen
  */
+//@Preview
 @Composable
 fun WelcomeScreen(
     onNavigateToLogin: () -> Unit,

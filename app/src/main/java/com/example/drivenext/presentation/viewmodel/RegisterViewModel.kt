@@ -43,8 +43,10 @@ class RegisterViewModel @Inject constructor(
 
     sealed class RegisterEffect {
         object NavigateToLogin : RegisterEffect()
+        object NavigateToRegisterStep2 : RegisterEffect()
         data class ShowError(val message: String) : RegisterEffect()
         data class ShowSuccess(val message: String) : RegisterEffect()
+        data class NavigateToRegisterStep2WithId(val userId: Long) : RegisterEffect()
     }
 
     override fun createInitialState(): RegisterState = RegisterState()
@@ -80,16 +82,14 @@ class RegisterViewModel @Inject constructor(
 
     /**
      * Метод для регистрации пользователя
-     * Вызывается при нажатии на кнопку "Зарегистрироваться"
+     * Вызывается при нажатии на кнопку "Далее"
      */
     fun register() {
         val state = state.value
         
         // Validate inputs
         if (!validateInputs(
-                state.name,
                 state.email,
-                state.phoneNumber,
                 state.password,
                 state.confirmPassword
             )
@@ -100,115 +100,105 @@ class RegisterViewModel @Inject constructor(
         // Create user and register
         setState { copy(isLoading = true) }
         
+        // Создаем пользователя с обязательными полями, остальные поля будут заполнены на втором шаге
         val user = User(
             name = state.name,
             email = state.email,
             phoneNumber = state.phoneNumber,
-            password = state.password
+            password = state.password,
+            firstName = "",
+            lastName = "",
+            middleName = "",
+            birthDate = null,
+            gender = ""
         )
 
         viewModelScope.launch {
-            // Check if email already exists
-            when (val emailCheck = userRepository.getUserByEmail(state.email)) {
-                is Result.Success -> {
-                    setState { copy(isLoading = false) }
-                    setEffect(RegisterEffect.ShowError("Email is already registered"))
-                }
-                is Result.Error -> {
-                    // Email doesn't exist, continue with registration
-                    when (val result = userRepository.createUser(user)) {
-                        is Result.Success -> {
+            try {
+                // Check if email already exists
+                when (val emailCheck = userRepository.getUserByEmail(state.email)) {
+                    is Result.Success -> {
+                        setState { copy(isLoading = false) }
+                        setEffect(RegisterEffect.ShowError("Email уже зарегистрирован"))
+                    }
+                    is Result.Error -> {
+                        // Email doesn't exist, continue with registration
+                        try {
+                            when (val result = userRepository.createUser(user)) {
+                                is Result.Success -> {
+                                    setState { copy(isLoading = false) }
+                                    // Передаем ID пользователя в следующий экран
+                                    val userId = result.data
+                                    if (userId > 0) {
+                                        setEffect(RegisterEffect.NavigateToRegisterStep2WithId(userId))
+                                    } else {
+                                        setEffect(RegisterEffect.ShowError("Не удалось получить ID пользователя"))
+                                    }
+                                }
+                                is Result.Error -> {
+                                    setState { copy(isLoading = false) }
+                                    setEffect(RegisterEffect.ShowError(result.exception.message ?: "Регистрация не удалась"))
+                                }
+                                is Result.Loading -> {
+                                    setState { copy(isLoading = true) }
+                                }
+                            }
+                        } catch (e: Exception) {
                             setState { copy(isLoading = false) }
-                            setEffect(RegisterEffect.ShowSuccess("Registration successful! Please login."))
-                            setEffect(RegisterEffect.NavigateToLogin)
-                        }
-                        is Result.Error -> {
-                            setState { copy(isLoading = false) }
-                            setEffect(RegisterEffect.ShowError(result.exception.message ?: "Registration failed"))
-                        }
-                        is Result.Loading -> {
-                            setState { copy(isLoading = true) }
+                            setEffect(RegisterEffect.ShowError("Ошибка при создании пользователя: ${e.message ?: "Неизвестная ошибка"}"))
                         }
                     }
+                    is Result.Loading -> {
+                        setState { copy(isLoading = true) }
+                    }
                 }
-                is Result.Loading -> {
-                    setState { copy(isLoading = true) }
-                }
+            } catch (e: Exception) {
+                setState { copy(isLoading = false) }
+                setEffect(RegisterEffect.ShowError("Произошла ошибка: ${e.message ?: "Неизвестная ошибка"}"))
             }
         }
     }
-    
-    /**
-     * Методы для обновления данных формы регистрации
-     */
-    fun onNameChanged(name: String) {
-        setEvent(RegisterEvent.NameChanged(name))
-    }
-    
-    fun onEmailChanged(email: String) {
-        setEvent(RegisterEvent.EmailChanged(email))
-    }
-    
-    fun onPhoneChanged(phone: String) {
-        setEvent(RegisterEvent.PhoneChanged(phone))
-    }
-    
-    fun onPasswordChanged(password: String) {
-        setEvent(RegisterEvent.PasswordChanged(password))
-    }
-    
-    fun onConfirmPasswordChanged(confirmPassword: String) {
-        setEvent(RegisterEvent.ConfirmPasswordChanged(confirmPassword))
-    }
 
+    /**
+     * Проверяет валидность введённых данных при регистрации
+     */
     private fun validateInputs(
-        name: String,
         email: String,
-        phone: String,
         password: String,
         confirmPassword: String
     ): Boolean {
         var isValid = true
 
         // Validate name
-        if (name.isBlank()) {
-            setState { copy(nameError = "Name cannot be empty") }
+        if (state.value.name.isBlank()) {
+            setState { copy(nameError = "Имя не может быть пустым") }
             isValid = false
         }
 
         // Validate email
         if (email.isBlank()) {
-            setState { copy(emailError = "Email cannot be empty") }
+            setState { copy(emailError = "Email не может быть пустым") }
             isValid = false
         } else if (!isValidEmail(email)) {
-            setState { copy(emailError = "Please enter a valid email address") }
-            isValid = false
-        }
-
-        // Validate phone
-        if (phone.isBlank()) {
-            setState { copy(phoneError = "Phone number cannot be empty") }
-            isValid = false
-        } else if (!isValidPhone(phone)) {
-            setState { copy(phoneError = "Please enter a valid phone number") }
+            setState { copy(emailError = "Введите корректный адрес электронной почты.") }
             isValid = false
         }
 
         // Validate password
         if (password.isBlank()) {
-            setState { copy(passwordError = "Password cannot be empty") }
+            setState { copy(passwordError = "Пароль не может быть пустым") }
             isValid = false
         } else if (password.length < 6) {
-            setState { copy(passwordError = "Password must be at least 6 characters") }
+            setState { copy(passwordError = "Пароль должен содержать не менее 6 символов") }
             isValid = false
         }
 
         // Validate confirm password
         if (confirmPassword.isBlank()) {
-            setState { copy(confirmPasswordError = "Confirm password cannot be empty") }
+            setState { copy(confirmPasswordError = "Повторите пароль") }
             isValid = false
         } else if (password != confirmPassword) {
-            setState { copy(confirmPasswordError = "Passwords do not match") }
+            setState { copy(confirmPasswordError = "Пароли не совпадают.") }
             isValid = false
         }
 
@@ -217,10 +207,6 @@ class RegisterViewModel @Inject constructor(
 
     private fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    private fun isValidPhone(phone: String): Boolean {
-        return android.util.Patterns.PHONE.matcher(phone).matches()
     }
 
     /**

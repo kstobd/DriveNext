@@ -60,7 +60,7 @@ fun RegisterScreen(
         ) {
             OutlinedTextField(
                 value = state.name,
-                onValueChange = { viewModel.onNameChanged(it) },
+                onValueChange = { viewModel.setEvent(RegisterViewModel.RegisterEvent.NameChanged(it)) },
                 label = { Text("Имя") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -70,7 +70,7 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = state.email,
-                onValueChange = { viewModel.onEmailChanged(it) },
+                onValueChange = { viewModel.setEvent(RegisterViewModel.RegisterEvent.EmailChanged(it)) },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -83,7 +83,7 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = state.password,
-                onValueChange = { viewModel.onPasswordChanged(it) },
+                onValueChange = { viewModel.setEvent(RegisterViewModel.RegisterEvent.PasswordChanged(it)) },
                 label = { Text("Пароль") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -97,7 +97,7 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = state.confirmPassword,
-                onValueChange = { viewModel.onConfirmPasswordChanged(it) },
+                onValueChange = { viewModel.setEvent(RegisterViewModel.RegisterEvent.ConfirmPasswordChanged(it)) },
                 label = { Text("Подтвердите пароль") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -112,7 +112,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { viewModel.register() },
+                onClick = { viewModel.setEvent(RegisterViewModel.RegisterEvent.RegisterClicked) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Зарегистрироваться")

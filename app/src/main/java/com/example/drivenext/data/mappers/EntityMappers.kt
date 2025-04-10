@@ -20,7 +20,12 @@ object EntityMappers {
             name = entity.name,
             email = entity.email,
             phoneNumber = entity.phoneNumber,
-            password = entity.password
+            password = entity.password,
+            firstName = entity.firstName,
+            lastName = entity.lastName,
+            middleName = entity.middleName,
+            birthDate = entity.birthDate,
+            gender = entity.gender
         )
     }
     
@@ -30,7 +35,12 @@ object EntityMappers {
             name = domain.name,
             email = domain.email,
             phoneNumber = domain.phoneNumber,
-            password = domain.password
+            password = domain.password,
+            firstName = domain.firstName,
+            lastName = domain.lastName,
+            middleName = domain.middleName,
+            birthDate = domain.birthDate,
+            gender = domain.gender
         )
     }
     
