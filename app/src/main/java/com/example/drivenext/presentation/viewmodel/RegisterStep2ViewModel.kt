@@ -40,6 +40,7 @@ class RegisterStep2ViewModel @Inject constructor(
     sealed class RegisterStep2Effect {
         object NavigateToHome : RegisterStep2Effect()
         object NavigateBack : RegisterStep2Effect()
+        data class NavigateToRegisterStep3(val userId: Long) : RegisterStep2Effect()
         data class ShowError(val message: String) : RegisterStep2Effect()
         data class ShowSuccess(val message: String) : RegisterStep2Effect()
     }
@@ -126,7 +127,8 @@ class RegisterStep2ViewModel @Inject constructor(
                     when (val updateResult = userRepository.updateUser(updatedUser)) {
                         is Result.Success -> {
                             setState { copy(isLoading = false) }
-                            setEffect(RegisterStep2Effect.NavigateToHome)
+                            setEffect(RegisterStep2Effect.ShowSuccess("Личные данные сохранены"))
+                            setEffect(RegisterStep2Effect.NavigateToRegisterStep3(userId))
                         }
                         is Result.Error -> {
                             setState { copy(isLoading = false) }
@@ -172,7 +174,7 @@ class RegisterStep2ViewModel @Inject constructor(
             setState { copy(birthDateError = "Дата рождения обязательна для заполнения") }
             isValid = false
         } else if (!isValidDate(currentState.birthDate)) {
-            setState { copy(birthDateError = "Введите корректную дату рождения (MM/DD/YYYY)") }
+            setState { copy(birthDateError = "Введите корректную дату рождения (MM.DD.YYYY)") }
             isValid = false
         }
 

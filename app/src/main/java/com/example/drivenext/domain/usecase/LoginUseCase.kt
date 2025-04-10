@@ -3,6 +3,7 @@ package com.example.drivenext.domain.usecase
 import com.example.drivenext.domain.model.User
 import com.example.drivenext.domain.repository.UserRepository
 import com.example.drivenext.utils.Result
+import com.example.drivenext.util.PasswordUtils
 import javax.inject.Inject
 
 /**
@@ -24,8 +25,8 @@ class LoginUseCase @Inject constructor(
         // Get user by email
         return when (val result = userRepository.getUserByEmail(email)) {
             is Result.Success -> {
-                // Check if password matches
-                if (result.data.password == password) {
+                // Проверяем пароль с использованием PasswordUtils
+                if (PasswordUtils.verifyPassword(password, result.data.password)) {
                     result
                 } else {
                     Result.Error(Exception("Неверный пароль"))

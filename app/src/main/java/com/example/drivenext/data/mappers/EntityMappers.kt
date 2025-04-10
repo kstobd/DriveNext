@@ -30,18 +30,8 @@ object EntityMappers {
     }
     
     fun mapUserDomainToEntity(domain: User): UserEntity {
-        return UserEntity(
-            id = domain.id,
-            name = domain.name,
-            email = domain.email,
-            phoneNumber = domain.phoneNumber,
-            password = domain.password,
-            firstName = domain.firstName,
-            lastName = domain.lastName,
-            middleName = domain.middleName,
-            birthDate = domain.birthDate,
-            gender = domain.gender
-        )
+        // Используем метод fromDomainModel который правильно хеширует пароль
+        return UserEntity.fromDomainModel(domain)
     }
     
     // Car mappers

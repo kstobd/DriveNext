@@ -18,6 +18,7 @@ import com.example.drivenext.presentation.screen.LoginScreen
 import com.example.drivenext.presentation.screen.OnboardingScreen
 import com.example.drivenext.presentation.screen.RegisterScreen
 import com.example.drivenext.presentation.screen.RegisterStep2Screen
+import com.example.drivenext.presentation.screen.RegisterStep3Screen
 import com.example.drivenext.presentation.screen.WelcomeScreen
 import com.example.drivenext.presentation.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
@@ -140,6 +141,40 @@ fun AppNavigation() {
                 onNavigateBack = {
                     navController.popBackStack()
                 },
+                onNavigateToRegisterStep3 = { userId ->
+                    navController.navigate(Screen.RegisterStep3.createRoute(userId))
+                },
+                onShowError = { message ->
+                    scope.launch {
+                        snackbarHostState.showSnackbar(message)
+                    }
+                },
+                onShowSuccess = { message ->
+                    scope.launch {
+                        snackbarHostState.showSnackbar(message)
+                    }
+                }
+            )
+        }
+        
+        // Register Step 3 Screen
+        composable(
+            route = Screen.RegisterStep3.route + "/{userId}",
+            arguments = listOf(
+                navArgument("userId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getLong("userId") ?: 0L
+            RegisterStep3Screen(
+                userId = userId,
+                onNavigateToHome = { 
+                    navController.navigate(Screen.CarList.createRoute(userId)) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
                 onShowError = { message ->
                     scope.launch {
                         snackbarHostState.showSnackbar(message)
@@ -214,6 +249,9 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object RegisterStep2 : Screen("register_step2") {
         fun createRoute(userId: Long) = "register_step2/$userId"
+    }
+    object RegisterStep3 : Screen("register_step3") {
+        fun createRoute(userId: Long) = "register_step3/$userId"
     }
     object CarList : Screen("car_list") {
         fun createRoute(userId: Long) = "car_list/$userId"

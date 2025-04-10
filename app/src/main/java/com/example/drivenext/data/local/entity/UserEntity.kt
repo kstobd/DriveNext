@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.drivenext.domain.model.User
+import com.example.drivenext.util.PasswordUtils
 import java.util.Date
 
 /**
@@ -54,13 +55,20 @@ data class UserEntity(
                 name = user.name,
                 email = user.email,
                 phoneNumber = user.phoneNumber,
-                password = user.password,
+                password = if (isPasswordHashed(user.password)) user.password else PasswordUtils.hashPassword(user.password),
                 firstName = user.firstName,
                 lastName = user.lastName,
                 middleName = user.middleName,
                 birthDate = user.birthDate,
                 gender = user.gender
             )
+        }
+        
+        /**
+         * Проверяет, хеширован ли уже пароль
+         */
+        private fun isPasswordHashed(password: String): Boolean {
+            return password.contains(":") && password.split(":").size == 2
         }
     }
 }

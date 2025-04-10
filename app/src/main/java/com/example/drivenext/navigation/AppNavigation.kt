@@ -99,6 +99,9 @@ fun AppNavigation(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
+                onNavigateToRegisterStep3 = { userId ->
+                    navController.navigate(Screen.RegisterStep3.createRoute(userId))
+                },
                 onShowError = { message ->
                     showSnackbar(message)
                 },
@@ -124,6 +127,9 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
     object RegisterStep2 : Screen("register_step2") {
+        fun createRoute(userId: Long): String = "$route/$userId"
+    }
+    object RegisterStep3 : Screen("register_step3") {
         fun createRoute(userId: Long): String = "$route/$userId"
     }
     object Home : Screen("home")

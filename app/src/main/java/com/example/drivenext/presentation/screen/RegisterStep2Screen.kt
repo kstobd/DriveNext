@@ -35,6 +35,7 @@ fun RegisterStep2Screen(
     viewModel: RegisterStep2ViewModel = hiltViewModel(),
     onNavigateToHome: () -> Unit,
     onNavigateBack: () -> Unit,
+    onNavigateToRegisterStep3: (Long) -> Unit,  // Добавляем навигацию на третий шаг
     onShowError: (String) -> Unit,
     onShowSuccess: (String) -> Unit
 ) {
@@ -61,13 +62,15 @@ fun RegisterStep2Screen(
                 RegisterStep2ViewModel.RegisterStep2Effect.NavigateBack -> {
                     onNavigateBack()
                 }
+                is RegisterStep2ViewModel.RegisterStep2Effect.NavigateToRegisterStep3 -> {
+                    onNavigateToRegisterStep3(effect.userId)
+                }
                 is RegisterStep2ViewModel.RegisterStep2Effect.ShowError -> {
                     onShowError(effect.message)
                 }
                 is RegisterStep2ViewModel.RegisterStep2Effect.ShowSuccess -> {
                     onShowSuccess(effect.message)
                 }
-                else -> {} // Добавляем ветку else для обработки возможных будущих эффектов
             }
         }
     }

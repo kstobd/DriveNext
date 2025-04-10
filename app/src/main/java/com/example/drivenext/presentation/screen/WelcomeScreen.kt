@@ -124,7 +124,7 @@ fun WelcomeScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Экран приветствия", showBackground = true, showSystemUi = true)
 @Composable
 fun WelcomeScreenPreview() {
     DriveNextTheme {

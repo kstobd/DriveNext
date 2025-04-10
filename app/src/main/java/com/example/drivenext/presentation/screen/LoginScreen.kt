@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.drivenext.domain.model.User
@@ -21,6 +22,7 @@ import com.example.drivenext.presentation.viewmodel.LoginViewModel
 /**
  * Login screen component for user authentication
  */
+
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
@@ -56,6 +58,31 @@ fun LoginScreen(
         return
     }
 
+    LoginScreenContent(
+        email = state.email,
+        password = state.password, 
+        emailError = state.emailError,
+        passwordError = state.passwordError,
+        isLoading = state.isLoading,
+        onEmailChange = { viewModel.setEvent(LoginViewModel.LoginEvent.EmailChanged(it)) },
+        onPasswordChange = { viewModel.setEvent(LoginViewModel.LoginEvent.PasswordChanged(it)) },
+        onLoginClick = { viewModel.setEvent(LoginViewModel.LoginEvent.LoginClicked) },
+        onRegisterClick = { viewModel.setEvent(LoginViewModel.LoginEvent.RegisterClicked) }
+    )
+}
+
+@Composable
+private fun LoginScreenContent(
+    email: String,
+    password: String,
+    emailError: String? = null,
+    passwordError: String? = null,
+    isLoading: Boolean = false,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onLoginClick: () -> Unit,
+    onRegisterClick: () -> Unit
+) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -83,16 +110,16 @@ fun LoginScreen(
 
             // Email field
             OutlinedTextField(
-                value = state.email,
-                onValueChange = { viewModel.setEvent(LoginViewModel.LoginEvent.EmailChanged(it)) },
+                value = email,
+                onValueChange = onEmailChange,
                 label = { Text("Email") },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
                 ),
                 singleLine = true,
-                isError = state.emailError != null,
-                supportingText = state.emailError?.let { { Text(it) } },
+                isError = emailError != null,
+                supportingText = emailError?.let { { Text(it) } },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -100,8 +127,8 @@ fun LoginScreen(
 
             // Password field
             OutlinedTextField(
-                value = state.password,
-                onValueChange = { viewModel.setEvent(LoginViewModel.LoginEvent.PasswordChanged(it)) },
+                value = password,
+                onValueChange = onPasswordChange,
                 label = { Text("Password") },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -109,8 +136,8 @@ fun LoginScreen(
                 ),
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                isError = state.passwordError != null,
-                supportingText = state.passwordError?.let { { Text(it) } },
+                isError = passwordError != null,
+                supportingText = passwordError?.let { { Text(it) } },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -118,13 +145,13 @@ fun LoginScreen(
 
             // Login button
             Button(
-                onClick = { viewModel.setEvent(LoginViewModel.LoginEvent.LoginClicked) },
-                enabled = !state.isLoading,
+                onClick = onLoginClick,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                if (state.isLoading) {
+                if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         color = MaterialTheme.colorScheme.onPrimary
@@ -157,10 +184,25 @@ fun LoginScreen(
             ) {
                 Text("Don't have an account?")
                 Spacer(modifier = Modifier.width(4.dp))
-                TextButton(onClick = { viewModel.setEvent(LoginViewModel.LoginEvent.RegisterClicked) }) {
+                TextButton(onClick = onRegisterClick) {
                     Text("Register")
                 }
             }
         }
+    }
+}
+
+@Preview(name = "Экран входа", showBackground = true, showSystemUi = true)
+@Composable
+fun LoginScreenPreview() {
+    MaterialTheme {
+        LoginScreenContent(
+            email = "",
+            password = "",
+            onEmailChange = {},
+            onPasswordChange = {},
+            onLoginClick = {},
+            onRegisterClick = {}
+        )
     }
 }
