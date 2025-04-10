@@ -24,7 +24,12 @@ import com.example.drivenext.presentation.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
 
 /**
- * Main navigation component for the application
+ * Главный навигационный компонент приложения.
+ * Отвечает за:
+ * - Определение всех доступных экранов
+ * - Настройку навигационных маршрутов
+ * - Передачу параметров между экранами
+ * - Обработку навигационных действий
  */
 @Composable
 fun AppNavigation() {
@@ -34,10 +39,12 @@ fun AppNavigation() {
     
     // Получаем OnboardingViewModel для определения начального экрана
     val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    
+    // Определяем начальный экран на основе состояния приложения
     val startDestination = when {
-        onboardingViewModel.hasValidToken() -> Screen.CarList.createRoute(0) // Переход к основному экрану, если есть токен
-        !onboardingViewModel.isOnboardingCompleted() -> Screen.Onboarding.route // Переход к онбордингу, если не пройден
-        else -> Screen.Welcome.route // Переход к экрану приветствия в остальных случаях
+        onboardingViewModel.hasValidToken() -> Screen.CarList.createRoute(0) // Сразу к списку авто если есть токен
+        !onboardingViewModel.isOnboardingCompleted() -> Screen.Onboarding.route // К онбордингу если не пройден
+        else -> Screen.Welcome.route // К приветственному экрану в остальных случаях
     }
 
     NavHost(
@@ -240,26 +247,45 @@ fun AppNavigation() {
 }
 
 /**
- * Sealed class representing navigation destinations
+ * Sealed класс, определяющий все экраны приложения и их маршруты.
+ * Каждый объект представляет отдельный экран приложения.
+ * Для экранов, требующих параметры, определены методы createRoute для формирования полного пути.
  */
 sealed class Screen(val route: String) {
+    /** Экран онбординга для первого запуска */
     object Onboarding : Screen("onboarding")
+    
+    /** Приветственный экран */
     object Welcome : Screen("welcome")
+    
+    /** Экран входа */
     object Login : Screen("login")
+    
+    /** Экран регистрации (шаг 1) */
     object Register : Screen("register")
+    
+    /** Экран регистрации (шаг 2) с указанием персональных данных */
     object RegisterStep2 : Screen("register_step2") {
-        fun createRoute(userId: Long) = "register_step2/$userId"
+        fun createRoute(userId: Long): String = "$route/$userId"
     }
+    
+    /** Экран регистрации (шаг 3) с загрузкой документов */
     object RegisterStep3 : Screen("register_step3") {
-        fun createRoute(userId: Long) = "register_step3/$userId"
+        fun createRoute(userId: Long): String = "$route/$userId"
     }
+    
+    /** Экран со списком доступных автомобилей */
     object CarList : Screen("car_list") {
-        fun createRoute(userId: Long) = "car_list/$userId"
+        fun createRoute(userId: Long): String = "$route/$userId"
     }
+    
+    /** Экран с подробной информацией об автомобиле */
     object CarDetail : Screen("car_detail") {
-        fun createRoute(carId: Long, userId: Long) = "car_detail/$carId/$userId"
+        fun createRoute(carId: Long, userId: Long): String = "$route/$carId/$userId"
     }
+    
+    /** Экран со списком бронирований пользователя */
     object BookingList : Screen("booking_list") {
-        fun createRoute(userId: Long) = "booking_list/$userId"
+        fun createRoute(userId: Long): String = "$route/$userId"
     }
 }

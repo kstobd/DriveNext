@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Screen for displaying a user's bookings
+ * Экран для отображения списка бронирований пользователя
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,12 +49,12 @@ fun BookingListScreen(
     val networkConnectivity = LocalNetworkConnectivity.current
     val isConnected by networkConnectivity.observeNetworkStatus().collectAsState(initial = true)
     
-    // Load bookings when the screen is first displayed
+    // Загружаем бронирования при первом отображении экрана
     LaunchedEffect(userId) {
         viewModel.setEvent(BookingListEvent.LoadBookings(userId))
     }
     
-    // Handle UI effects
+    // Обработка UI эффектов
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -136,7 +136,7 @@ fun BookingListScreen(
 }
 
 /**
- * Individual booking item in the list
+ * Элемент бронирования в списке
  */
 @Composable
 fun BookingItem(
@@ -159,7 +159,7 @@ fun BookingItem(
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min)
         ) {
-            // Car image if available
+            // Изображение автомобиля, если доступно
             if (car != null) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -190,7 +190,7 @@ fun BookingItem(
                     .weight(1f)
                     .padding(16.dp)
             ) {
-                // Car details if available
+                // Детали автомобиля, если доступны
                 if (car != null) {
                     Text(
                         text = "${car.brand} ${car.model}",
@@ -200,34 +200,34 @@ fun BookingItem(
                     )
                 } else {
                     Text(
-                        text = "Loading car details...",
+                        text = "Загрузка информации об автомобиле...",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Booking dates
+                // Даты бронирования
                 Text(
-                    text = "From: ${dateFormat.format(booking.startDate)}",
+                    text = "С: ${dateFormat.format(booking.startDate)}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 
                 Text(
-                    text = "To: ${dateFormat.format(booking.endDate)}",
+                    text = "По: ${dateFormat.format(booking.endDate)}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // Booking status
+                // Статус бронирования
                 BookingStatusChip(status = booking.status)
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // Total price
+                // Общая стоимость
                 Text(
-                    text = "Total: ${currencyFormat.format(booking.totalPrice)}",
+                    text = "Итого: ${currencyFormat.format(booking.totalPrice)}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -237,7 +237,7 @@ fun BookingItem(
 }
 
 /**
- * Chip displaying booking status with appropriate color
+ * Чип для отображения статуса бронирования с соответствующим цветом
  */
 @Composable
 fun BookingStatusChip(status: BookingStatus) {

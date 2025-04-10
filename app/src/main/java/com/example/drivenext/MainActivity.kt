@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             DriveNextTheme {
                 // Предоставляем NetworkConnectivity через CompositionLocalProvider
+                // для доступа к нему из любого места в приложении
                 CompositionLocalProvider(
                     LocalNetworkConnectivity provides networkConnectivity
                 ) {
@@ -42,14 +43,16 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        // Отслеживаем состояние сети
+                        // Получаем текущее состояние подключения
                         val isConnected by networkConnectivity.observeNetworkStatus().collectAsState(initial = true)
                         
+                        // Если нет подключения, показываем экран отсутствия подключения на уровне всего приложения
                         if (!isConnected) {
                             NoConnectionScreen(
                                 onRetry = { networkConnectivity.checkNetworkConnection() }
                             )
                         } else {
+                            // Запускаем AppNavigation только если есть подключение к интернету
                             AppNavigation()
                         }
                     }

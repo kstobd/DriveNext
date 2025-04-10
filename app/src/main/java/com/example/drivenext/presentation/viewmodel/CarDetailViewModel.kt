@@ -8,15 +8,32 @@ import com.example.drivenext.utils.Result
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
 
 /**
- * ViewModel for car detail screen that handles displaying car details and booking
+ * ViewModel для экрана детальной информации об автомобиле.
+ * Отвечает за:
+ * - Загрузку и отображение подробной информации об автомобиле
+ * - Управление процессом бронирования
+ * - Валидацию дат бронирования
+ * - Расчет стоимости аренды
  */
+@HiltViewModel
 class CarDetailViewModel @Inject constructor(
     private val carRepository: CarRepository,
     private val createBookingUseCase: CreateBookingUseCase
 ) : BaseViewModel<CarDetailViewModel.CarDetailState, CarDetailViewModel.CarDetailEvent, CarDetailViewModel.CarDetailEffect>() {
 
+    /**
+     * Состояние экрана деталей автомобиля
+     * @param car Информация об автомобиле
+     * @param startDate Дата начала аренды
+     * @param endDate Дата окончания аренды
+     * @param totalPrice Общая стоимость аренды
+     * @param isLoading Флаг загрузки данных об автомобиле
+     * @param bookingInProgress Флаг процесса бронирования
+     * @param dateError Ошибка при выборе дат
+     */
     data class CarDetailState(
         val car: Car? = null,
         val startDate: Date? = null,
@@ -27,6 +44,14 @@ class CarDetailViewModel @Inject constructor(
         val dateError: String? = null
     )
 
+    /**
+     * События, происходящие на экране деталей автомобиля
+     * LoadCar - Запрос на загрузку информации об автомобиле
+     * StartDateSelected - Выбрана дата начала аренды
+     * EndDateSelected - Выбрана дата окончания аренды
+     * BookCar - Запрос на бронирование автомобиля
+     * BackPressed - Нажата кнопка "Назад"
+     */
     sealed class CarDetailEvent {
         data class LoadCar(val carId: Long) : CarDetailEvent()
         data class StartDateSelected(val date: Date) : CarDetailEvent()
@@ -35,6 +60,12 @@ class CarDetailViewModel @Inject constructor(
         object BackPressed : CarDetailEvent()
     }
 
+    /**
+     * Эффекты UI для экрана деталей автомобиля
+     * NavigateBack - Возврат к предыдущему экрану
+     * ShowError - Отображение ошибки
+     * BookingSuccess - Успешное бронирование
+     */
     sealed class CarDetailEffect {
         object NavigateBack : CarDetailEffect()
         data class ShowError(val message: String) : CarDetailEffect()
@@ -53,6 +84,10 @@ class CarDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Загружает информацию об автомобиле по его ID
+     * @param carId ID автомобиля
+     */
     private fun loadCar(carId: Long) {
         setState { copy(isLoading = true) }
         
@@ -63,7 +98,7 @@ class CarDetailViewModel @Inject constructor(
                 }
                 is Result.Error -> {
                     setState { copy(isLoading = false) }
-                    setEffect(CarDetailEffect.ShowError(result.exception.message ?: "Failed to load car details"))
+                    setEffect(CarDetailEffect.ShowError(result.exception.message ?: "Не удалось загрузить информацию об автомобиле"))
                     setEffect(CarDetailEffect.NavigateBack)
                 }
                 is Result.Loading -> {
@@ -73,81 +108,72 @@ class CarDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Обновляет дату начала аренды и пересчитывает стоимость
+     * @param date Выбранная дата начала аренды
+     */
     private fun updateStartDate(date: Date) {
         setState { 
             val startDate = date
             val endDate = this.endDate
             val car = this.car
             
-            // Calculate total price if both dates are set
-            val totalPrice = if (car != null && endDate != null) {
-                calculateTotalPrice(car, startDate, endDate)
+            // Рассчитываем общую стоимость, если выбраны обе даты
+            if (endDate != null && car != null) {
+                val days = ((endDate.time - startDate.time) / (1000 * 60 * 60 * 24)).toInt() + 1
+                val totalPrice = car.pricePerDay * days
+                copy(startDate = startDate, totalPrice = totalPrice, dateError = validateDates(startDate, endDate))
             } else {
-                0.0
+                copy(startDate = startDate, dateError = null)
             }
-            
-            copy(
-                startDate = startDate, 
-                totalPrice = totalPrice, 
-                dateError = validateDates(startDate, endDate)
-            ) 
         }
     }
 
+    /**
+     * Обновляет дату окончания аренды и пересчитывает стоимость
+     * @param date Выбранная дата окончания аренды
+     */
     private fun updateEndDate(date: Date) {
         setState { 
             val startDate = this.startDate
             val endDate = date
             val car = this.car
             
-            // Calculate total price if both dates are set
-            val totalPrice = if (car != null && startDate != null) {
-                calculateTotalPrice(car, startDate, endDate)
+            if (startDate != null && car != null) {
+                val days = ((endDate.time - startDate.time) / (1000 * 60 * 60 * 24)).toInt() + 1
+                val totalPrice = car.pricePerDay * days
+                copy(endDate = endDate, totalPrice = totalPrice, dateError = validateDates(startDate, endDate))
             } else {
-                0.0
+                copy(endDate = endDate, dateError = null)
             }
-            
-            copy(
-                endDate = endDate, 
-                totalPrice = totalPrice, 
-                dateError = validateDates(startDate, endDate)
-            ) 
         }
     }
 
-    private fun calculateTotalPrice(car: Car, startDate: Date, endDate: Date): Double {
-        val durationInMillis = endDate.time - startDate.time
-        val durationInDays = (durationInMillis / (1000 * 60 * 60 * 24)).toInt() + 1
-        return car.pricePerDay * durationInDays
+    /**
+     * Проверяет корректность выбранных дат
+     * @param startDate Дата начала аренды
+     * @param endDate Дата окончания аренды
+     * @return Текст ошибки или null, если даты корректны
+     */
+    private fun validateDates(startDate: Date, endDate: Date): String? {
+        val now = Date()
+        return when {
+            startDate.before(now) -> "Дата начала аренды не может быть в прошлом"
+            endDate.before(startDate) -> "Дата окончания аренды не может быть раньше даты начала"
+            else -> null
+        }
     }
 
-    private fun validateDates(startDate: Date?, endDate: Date?): String? {
-        if (startDate == null || endDate == null) {
-            return null
-        }
-        
-        if (startDate.after(endDate)) {
-            return "Start date cannot be after end date"
-        }
-        
-        if (startDate.before(Date())) {
-            return "Start date cannot be in the past"
-        }
-        
-        return null
-    }
-
+    /**
+     * Создает новое бронирование автомобиля
+     * @param userId ID пользователя, создающего бронирование
+     */
     private fun bookCar(userId: Long) {
-        val car = state.value.car
-        val startDate = state.value.startDate
-        val endDate = state.value.endDate
+        val currentState = state.value
+        val car = currentState.car ?: return
+        val startDate = currentState.startDate ?: return
+        val endDate = currentState.endDate ?: return
         
-        if (car == null || startDate == null || endDate == null) {
-            setEffect(CarDetailEffect.ShowError("Please select both start and end dates"))
-            return
-        }
-        
-        // Validate dates
         val dateError = validateDates(startDate, endDate)
         if (dateError != null) {
             setState { copy(dateError = dateError) }
@@ -165,7 +191,7 @@ class CarDetailViewModel @Inject constructor(
                 }
                 is Result.Error -> {
                     setState { copy(bookingInProgress = false) }
-                    setEffect(CarDetailEffect.ShowError(result.exception.message ?: "Failed to book the car"))
+                    setEffect(CarDetailEffect.ShowError(result.exception.message ?: "Не удалось забронировать автомобиль"))
                 }
                 is Result.Loading -> {
                     setState { copy(bookingInProgress = true) }
@@ -174,6 +200,9 @@ class CarDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Возвращает пользователя к предыдущему экрану
+     */
     private fun navigateBack() {
         setEffect(CarDetailEffect.NavigateBack)
     }

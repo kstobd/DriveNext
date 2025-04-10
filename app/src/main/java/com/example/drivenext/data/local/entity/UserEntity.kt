@@ -55,7 +55,7 @@ data class UserEntity(
                 name = user.name,
                 email = user.email,
                 phoneNumber = user.phoneNumber,
-                password = if (isPasswordHashed(user.password)) user.password else PasswordUtils.hashPassword(user.password),
+                password = user.password, // Пароль уже должен быть хеширован на уровне VM
                 firstName = user.firstName,
                 lastName = user.lastName,
                 middleName = user.middleName,

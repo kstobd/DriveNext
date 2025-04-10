@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.drivenext.domain.model.User
 import com.example.drivenext.domain.repository.UserRepository
 import com.example.drivenext.utils.Result
+import com.example.drivenext.util.PasswordUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -100,12 +101,15 @@ class RegisterViewModel @Inject constructor(
         // Create user and register
         setState { copy(isLoading = true) }
         
+        // Хешируем пароль перед созданием пользователя
+        val hashedPassword = PasswordUtils.hashPassword(state.password)
+        
         // Создаем пользователя с обязательными полями, остальные поля будут заполнены на втором шаге
         val user = User(
             name = state.name,
             email = state.email,
             phoneNumber = state.phoneNumber,
-            password = state.password,
+            password = hashedPassword,
             firstName = "",
             lastName = "",
             middleName = "",

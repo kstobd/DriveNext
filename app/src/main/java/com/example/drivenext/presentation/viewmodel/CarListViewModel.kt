@@ -11,25 +11,47 @@ import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 /**
- * ViewModel for the car list screen that displays available cars
+ * ViewModel для экрана списка автомобилей.
+ * Отвечает за:
+ * - Загрузку и отображение списка доступных автомобилей
+ * - Обработку событий пользовательского интерфейса
+ * - Обработку ошибок загрузки данных
+ * - Навигацию к деталям выбранного автомобиля
  */
 @HiltViewModel
 class CarListViewModel @Inject constructor(
     private val getAvailableCarsUseCase: GetAvailableCarsUseCase
 ) : BaseViewModel<CarListViewModel.CarListState, CarListViewModel.CarListEvent, CarListViewModel.CarListEffect>() {
 
+    /**
+     * Состояние экрана списка автомобилей
+     * @param cars Список доступных автомобилей
+     * @param isLoading Флаг загрузки данных
+     * @param error Текст ошибки, если она возникла
+     */
     data class CarListState(
         val cars: List<Car> = emptyList(),
         val isLoading: Boolean = false,
         val error: String? = null
     )
 
+    /**
+     * События, которые могут происходить на экране списка автомобилей
+     * LoadCars - Запрос на загрузку списка автомобилей
+     * CarSelected - Пользователь выбрал автомобиль из списка
+     * RefreshCars - Запрос на обновление списка автомобилей (например, после потери соединения)
+     */
     sealed class CarListEvent {
         object LoadCars : CarListEvent()
         data class CarSelected(val car: Car) : CarListEvent()
         object RefreshCars : CarListEvent()
     }
 
+    /**
+     * Эффекты, которые могут быть вызваны действиями на экране
+     * NavigateToCarDetail - Переход к экрану деталей автомобиля
+     * ShowError - Отображение сообщения об ошибке
+     */
     sealed class CarListEffect {
         data class NavigateToCarDetail(val carId: Long) : CarListEffect()
         data class ShowError(val message: String) : CarListEffect()
@@ -54,8 +76,9 @@ class CarListViewModel @Inject constructor(
     }
 
     /**
-     * Метод для загрузки списка автомобилей
-     * Вызывается при первом открытии экрана и при нажатии на кнопку "Повторить попытку"
+     * Метод для загрузки списка автомобилей.
+     * Вызывается при первом открытии экрана и при обновлении списка.
+     * Использует useCase для получения данных из репозитория.
      */
     fun loadCars() {
         setState { copy(isLoading = true, error = null) }
@@ -87,6 +110,10 @@ class CarListViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Метод для перехода к экрану деталей выбранного автомобиля
+     * @param car Выбранный автомобиль
+     */
     private fun navigateToCarDetail(car: Car) {
         setEffect(CarListEffect.NavigateToCarDetail(car.id))
     }
