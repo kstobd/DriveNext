@@ -135,6 +135,19 @@ fun LoginScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            
+            // Google Sign-In button
+            OutlinedButton(
+                onClick = { /* Функционал будет добавлен позже */ },
+                enabled = false,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("Войти через Google")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Register text
             Row(

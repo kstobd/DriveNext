@@ -35,7 +35,8 @@ import com.example.drivenext.ui.theme.DriveNextTheme
  */
 @Composable
 fun WelcomeScreen(
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    onNavigateToRegister: () -> Unit = onNavigateToLogin // По умолчанию используем тот же обработчик
 ) {
     Box(
         modifier = Modifier
@@ -98,6 +99,26 @@ fun WelcomeScreen(
                     fontWeight = FontWeight.Medium
                 )
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Кнопка для перехода к экрану регистрации
+            Button(
+                onClick = onNavigateToRegister,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Text(
+                    text = "Зарегистрироваться",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }
@@ -106,6 +127,9 @@ fun WelcomeScreen(
 @Composable
 fun WelcomeScreenPreview() {
     DriveNextTheme {
-        WelcomeScreen(onNavigateToLogin = {})
+        WelcomeScreen(
+            onNavigateToLogin = {},
+            onNavigateToRegister = {}
+        )
     }
 }

@@ -60,6 +60,11 @@ fun AppNavigation() {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(Screen.Register.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
                 }
             )
         }
