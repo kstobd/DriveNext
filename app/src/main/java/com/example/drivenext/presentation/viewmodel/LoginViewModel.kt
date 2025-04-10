@@ -29,6 +29,7 @@ class LoginViewModel @Inject constructor(
         data class PasswordChanged(val password: String) : LoginEvent()
         object LoginClicked : LoginEvent()
         object RegisterClicked : LoginEvent()
+        object RetryConnection : LoginEvent()
     }
 
     sealed class LoginEffect {
@@ -52,6 +53,9 @@ class LoginViewModel @Inject constructor(
             }
             is LoginEvent.RegisterClicked -> {
                 setEffect(LoginEffect.NavigateToRegister)
+            }
+            is LoginEvent.RetryConnection -> {
+                // Просто обновляем состояние для проверки соединения
             }
         }
     }

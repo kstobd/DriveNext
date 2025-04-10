@@ -5,63 +5,92 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.produceState
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
- * Utility class to monitor network connectivity
+ * Класс для отслеживания состояния подключения к интернету
  */
-object NetworkConnectivity {
+@Singleton
+class NetworkConnectivity @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+    private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    
+    // Для отправки актуального состояния подключения
+    private val connectionStateFlow = MutableStateFlow(isConnected())
+
     /**
-     * Network connection state as a Flow
+     * Проверяет текущее состояние подключения к интернету
      */
-    @ExperimentalCoroutinesApi
-    fun networkConnectionFlow(context: Context) = callbackFlow {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    fun isConnected(): Boolean {
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
         
-        val callback = object : ConnectivityManager.NetworkCallback() {
+        // Проверяем наличие интернет-соединения
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+               capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    /**
+     * Метод для повторной проверки подключения к интернету
+     * Вызывается при нажатии на кнопку "Повторить попытку"
+     * 
+     * @return текущее состояние подключения
+     */
+    fun checkNetworkConnection(): Boolean {
+        val currentConnectionState = isConnected()
+        connectionStateFlow.value = currentConnectionState
+        return currentConnectionState
+    }
+
+    /**
+     * Flow для отслеживания изменений статуса подключения к интернету
+     * 
+     * @return Flow<Boolean>, где true - подключение есть, false - подключения нет
+     */
+    fun observeNetworkStatus(): Flow<Boolean> = callbackFlow {
+        val networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
+                // Сеть доступна, отправляем true
                 trySend(true)
             }
-            
+
             override fun onLost(network: Network) {
+                // Сеть недоступна, отправляем false
                 trySend(false)
             }
+
+            override fun onCapabilitiesChanged(
+                network: Network,
+                networkCapabilities: NetworkCapabilities
+            ) {
+                // Проверяем возможности сети
+                val hasInternet = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                                 networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                trySend(hasInternet)
+            }
         }
-        
-        val networkRequest = NetworkRequest.Builder()
+
+        val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
+
+        // Регистрируем слушатель изменений сети
+        connectivityManager.registerNetworkCallback(request, networkCallback)
         
-        connectivityManager.registerNetworkCallback(networkRequest, callback)
-        
-        // Set initial state
-        val isConnected = connectivityManager.activeNetwork?.let { network ->
-            connectivityManager.getNetworkCapabilities(network)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        } ?: false
-        
-        trySend(isConnected)
-        
+        // Отправляем начальное состояние сети
+        trySend(isConnected())
+
+        // Удаляем слушатель при закрытии Flow
         awaitClose {
-            connectivityManager.unregisterNetworkCallback(callback)
+            connectivityManager.unregisterNetworkCallback(networkCallback)
         }
-    }
-    
-    /**
-     * Composable function to get current connectivity state
-     */
-    @Composable
-    fun connectivityState(): State<Boolean> {
-        return produceState(initialValue = true) {
-            // This is a placeholder. In a real app, you'd use:
-            // networkConnectionFlow(context).collect { value = it }
-            // 
-            // Since we can't access context here, we're returning a default value for now
-            value = true
-        }
-    }
+    }.distinctUntilChanged() // Отправляем события только при изменении состояния
 }

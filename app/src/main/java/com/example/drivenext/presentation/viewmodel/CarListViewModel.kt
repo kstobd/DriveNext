@@ -53,7 +53,11 @@ class CarListViewModel @Inject constructor(
         }
     }
 
-    private fun loadCars() {
+    /**
+     * Метод для загрузки списка автомобилей
+     * Вызывается при первом открытии экрана и при нажатии на кнопку "Повторить попытку"
+     */
+    fun loadCars() {
         setState { copy(isLoading = true, error = null) }
 
         try {

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.drivenext.presentation.viewmodel.RegisterViewModel
 import com.example.drivenext.utils.NetworkConnectivity
+import com.example.drivenext.presentation.util.LocalNetworkConnectivity
 
 /**
  * Screen for user registration
@@ -33,7 +34,8 @@ fun RegisterScreen(
     onShowSuccess: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val isConnected by NetworkConnectivity.connectivityState()
+    val networkConnectivity = LocalNetworkConnectivity.current
+    val isConnected by networkConnectivity.observeNetworkStatus().collectAsState(initial = true)
 
     // Handle UI effects
     LaunchedEffect(Unit) {
@@ -53,7 +55,9 @@ fun RegisterScreen(
     }
 
     if (!isConnected) {
-        NoConnectionScreen()
+        NoConnectionScreen(
+            onRetry = { viewModel.setEvent(RegisterViewModel.RegisterEvent.RetryConnection) }
+        )
         return
     }
 

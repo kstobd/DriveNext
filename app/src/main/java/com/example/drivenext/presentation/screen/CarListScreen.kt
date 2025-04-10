@@ -19,9 +19,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.drivenext.domain.model.Car
+import com.example.drivenext.presentation.util.LocalNetworkConnectivity
 import com.example.drivenext.presentation.viewmodel.CarListViewModel
 import com.example.drivenext.presentation.viewmodel.CarListViewModel.CarListEvent
-import com.example.drivenext.utils.NetworkConnectivity
 import java.text.NumberFormat
 import java.util.*
 
@@ -35,7 +35,8 @@ fun CarListScreen(
     onShowError: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val isConnected by NetworkConnectivity.connectivityState()
+    val networkConnectivity = LocalNetworkConnectivity.current
+    val isConnected by networkConnectivity.observeNetworkStatus().collectAsState(initial = true)
 
     // Handle UI effects
     LaunchedEffect(Unit) {

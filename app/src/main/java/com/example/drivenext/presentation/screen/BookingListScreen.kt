@@ -22,9 +22,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.drivenext.domain.model.BookingStatus
+import com.example.drivenext.presentation.screen.NoConnectionScreen
+import com.example.drivenext.presentation.util.LocalNetworkConnectivity
 import com.example.drivenext.presentation.viewmodel.BookingListViewModel
 import com.example.drivenext.presentation.viewmodel.BookingListViewModel.BookingListEvent
-import com.example.drivenext.utils.NetworkConnectivity
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -42,7 +43,11 @@ fun BookingListScreen(
     onShowError: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val isConnected by NetworkConnectivity.connectivityState()
+    val context = LocalContext.current
+    
+    // Получаем NetworkConnectivity через CompositionLocal
+    val networkConnectivity = LocalNetworkConnectivity.current
+    val isConnected by networkConnectivity.observeNetworkStatus().collectAsState(initial = true)
     
     // Load bookings when the screen is first displayed
     LaunchedEffect(userId) {
@@ -63,10 +68,11 @@ fun BookingListScreen(
         }
     }
     
+    // Проверяем подключение к интернету
     if (!isConnected) {
-        NoConnectionScreen {
-            viewModel.setEvent(BookingListEvent.RefreshBookings)
-        }
+        NoConnectionScreen(
+            onRetry = { viewModel.setEvent(BookingListEvent.RefreshBookings) }
+        )
         return
     }
     

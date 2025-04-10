@@ -38,6 +38,7 @@ class RegisterViewModel @Inject constructor(
         data class ConfirmPasswordChanged(val confirmPassword: String) : RegisterEvent()
         object RegisterClicked : RegisterEvent()
         object LoginClicked : RegisterEvent()
+        object RetryConnection : RegisterEvent()
     }
 
     sealed class RegisterEffect {
@@ -71,10 +72,17 @@ class RegisterViewModel @Inject constructor(
             is RegisterEvent.LoginClicked -> {
                 setEffect(RegisterEffect.NavigateToLogin)
             }
+            is RegisterEvent.RetryConnection -> {
+                // Просто обновляем состояние для проверки соединения
+            }
         }
     }
 
-    private fun register() {
+    /**
+     * Метод для регистрации пользователя
+     * Вызывается при нажатии на кнопку "Зарегистрироваться"
+     */
+    fun register() {
         val state = state.value
         
         // Validate inputs
@@ -128,6 +136,29 @@ class RegisterViewModel @Inject constructor(
                 }
             }
         }
+    }
+    
+    /**
+     * Методы для обновления данных формы регистрации
+     */
+    fun onNameChanged(name: String) {
+        setEvent(RegisterEvent.NameChanged(name))
+    }
+    
+    fun onEmailChanged(email: String) {
+        setEvent(RegisterEvent.EmailChanged(email))
+    }
+    
+    fun onPhoneChanged(phone: String) {
+        setEvent(RegisterEvent.PhoneChanged(phone))
+    }
+    
+    fun onPasswordChanged(password: String) {
+        setEvent(RegisterEvent.PasswordChanged(password))
+    }
+    
+    fun onConfirmPasswordChanged(confirmPassword: String) {
+        setEvent(RegisterEvent.ConfirmPasswordChanged(confirmPassword))
     }
 
     private fun validateInputs(
@@ -190,5 +221,14 @@ class RegisterViewModel @Inject constructor(
 
     private fun isValidPhone(phone: String): Boolean {
         return android.util.Patterns.PHONE.matcher(phone).matches()
+    }
+
+    /**
+     * Метод для повторной проверки подключения к интернету
+     * Вызывается при нажатии на кнопку "Повторить попытку" на экране отсутствия подключения
+     */
+    fun checkConnection() {
+        // Здесь можно добавить логику повторной проверки подключения
+        // Этот метод будет вызываться при нажатии кнопки "Повторить попытку"
     }
 }

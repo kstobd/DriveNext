@@ -34,7 +34,7 @@ class BookingListViewModel @Inject constructor(
     sealed class BookingListEvent {
         data class LoadBookings(val userId: Long) : BookingListEvent()
         data class BookingSelected(val bookingId: Long) : BookingListEvent()
-        object RefreshBookings : BookingListEvent()
+        object RefreshBookings : BookingListEvent() // Добавлено новое событие для повторной проверки
     }
 
     sealed class BookingListEffect {

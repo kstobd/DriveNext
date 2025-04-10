@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.drivenext.presentation.components.NoConnectionScreen
+import com.example.drivenext.presentation.util.LocalNetworkConnectivity
 import com.example.drivenext.presentation.viewmodel.LoginViewModel
 import com.example.drivenext.utils.NetworkConnectivity
 
@@ -41,8 +42,11 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val isConnected by NetworkConnectivity.connectivityState()
     val context = LocalContext.current
+
+    // Получаем состояние сети через LocalNetworkConnectivity
+    val networkConnectivity = LocalNetworkConnectivity.current
+    val isConnected by networkConnectivity.observeNetworkStatus().collectAsState(initial = true)
 
     LaunchedEffect(key1 = true) {
         viewModel.effect.collect { effect ->
@@ -60,102 +64,104 @@ fun LoginScreen(
         }
     }
 
+    // Проверяем подключение к интернету
     if (!isConnected) {
-        NoConnectionScreen {
-            // Retry button clicked - You would implement a retry logic here
-        }
-    } else {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+        NoConnectionScreen(
+            onRetry = { viewModel.setEvent(LoginViewModel.LoginEvent.RetryConnection) }
+        )
+        return
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            Text(
+                text = "DriveNext",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Sign in to your account",
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedTextField(
+                value = state.email,
+                onValueChange = { viewModel.setEvent(LoginViewModel.LoginEvent.EmailChanged(it)) },
+                label = { Text("Email") },
+                isError = state.emailError != null,
+                supportingText = {
+                    state.emailError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = state.password,
+                onValueChange = { viewModel.setEvent(LoginViewModel.LoginEvent.PasswordChanged(it)) },
+                label = { Text("Password") },
+                isError = state.passwordError != null,
+                supportingText = {
+                    state.passwordError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = { viewModel.setEvent(LoginViewModel.LoginEvent.LoginClicked) },
+                enabled = !state.isLoading,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "DriveNext",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Sign in to your account",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                OutlinedTextField(
-                    value = state.email,
-                    onValueChange = { viewModel.setEvent(LoginViewModel.LoginEvent.EmailChanged(it)) },
-                    label = { Text("Email") },
-                    isError = state.emailError != null,
-                    supportingText = {
-                        state.emailError?.let {
-                            Text(
-                                text = it,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = state.password,
-                    onValueChange = { viewModel.setEvent(LoginViewModel.LoginEvent.PasswordChanged(it)) },
-                    label = { Text("Password") },
-                    isError = state.passwordError != null,
-                    supportingText = {
-                        state.passwordError?.let {
-                            Text(
-                                text = it,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    },
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = { viewModel.setEvent(LoginViewModel.LoginEvent.LoginClicked) },
-                    enabled = !state.isLoading,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Sign In")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextButton(
-                    onClick = { viewModel.setEvent(LoginViewModel.LoginEvent.RegisterClicked) }
-                ) {
-                    Text("Don't have an account? Sign Up")
-                }
+                Text("Sign In")
             }
 
-            if (state.isLoading) {
-                CircularProgressIndicator()
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+                onClick = { viewModel.setEvent(LoginViewModel.LoginEvent.RegisterClicked) }
+            ) {
+                Text("Don't have an account? Sign Up")
             }
+        }
+
+        if (state.isLoading) {
+            CircularProgressIndicator()
         }
     }
 }

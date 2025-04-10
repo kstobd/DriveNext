@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.drivenext.presentation.util.LocalNetworkConnectivity
 import com.example.drivenext.presentation.viewmodel.CarDetailViewModel
 import com.example.drivenext.presentation.viewmodel.CarDetailViewModel.CarDetailEvent
-import com.example.drivenext.utils.NetworkConnectivity
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -40,7 +40,11 @@ fun CarDetailScreen(
     onShowSuccess: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val isConnected by NetworkConnectivity.connectivityState()
+    
+    // Получаем состояние сети через LocalNetworkConnectivity
+    val networkConnectivity = LocalNetworkConnectivity.current
+    val isConnected by networkConnectivity.observeNetworkStatus().collectAsState(initial = true)
+    
     val scrollState = rememberScrollState()
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale.US)
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
@@ -68,8 +72,11 @@ fun CarDetailScreen(
         }
     }
     
+    // Проверяем подключение к интернету
     if (!isConnected) {
-        NoConnectionScreen()
+        NoConnectionScreen(
+            onRetry = { viewModel.setEvent(CarDetailEvent.LoadCar(carId)) }
+        )
         return
     }
     
