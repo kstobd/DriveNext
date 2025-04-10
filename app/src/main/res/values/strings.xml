@@ -3,4 +3,17 @@
     <string name="no_internet_connection">Нет подключения к интернету</string>
     <string name="check_connection">Проверьте подключение и повторите попытку</string>
     <string name="retry">Повторить попытку</string>
+    
+    <!-- Onboarding strings -->
+    <string name="onboarding_title_1">Быстрый поиск автомобилей</string>
+    <string name="onboarding_title_2">Удобное бронирование</string>
+    <string name="onboarding_title_3">Особые условия аренды</string>
+    
+    <string name="onboarding_description_1">Найдите идеальный автомобиль за считанные секунды. Фильтруйте по марке, цене и другим параметрам.</string>
+    <string name="onboarding_description_2">Забронируйте автомобиль онлайн в любое удобное для вас время. Никаких очередей и ожиданий.</string>
+    <string name="onboarding_description_3">Получайте скидки, бонусы и специальные предложения для постоянных клиентов.</string>
+    
+    <string name="skip">Пропустить</string>
+    <string name="next">Далее</string>
+    <string name="get_started">Поехали!</string>
 </resources>

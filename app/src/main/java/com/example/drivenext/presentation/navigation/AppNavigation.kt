@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,8 +15,10 @@ import androidx.navigation.navArgument
 import com.example.drivenext.domain.model.User
 import com.example.drivenext.presentation.screen.CarListScreen
 import com.example.drivenext.presentation.screen.LoginScreen
+import com.example.drivenext.presentation.screen.OnboardingScreen
 import com.example.drivenext.presentation.screen.RegisterScreen
 import com.example.drivenext.presentation.screen.WelcomeScreen
+import com.example.drivenext.presentation.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -26,11 +29,30 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    
+    // Получаем OnboardingViewModel для определения начального экрана
+    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    val startDestination = when {
+        onboardingViewModel.hasValidToken() -> Screen.CarList.createRoute(0) // Переход к основному экрану, если есть токен
+        !onboardingViewModel.isOnboardingCompleted() -> Screen.Onboarding.route // Переход к онбордингу, если не пройден
+        else -> Screen.Welcome.route // Переход к экрану приветствия в остальных случаях
+    }
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Welcome.route
+        startDestination = startDestination
     ) {
+        // Onboarding Screen
+        composable(route = Screen.Onboarding.route) {
+            OnboardingScreen(
+                onBoardingFinished = {
+                    navController.navigate(Screen.Welcome.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        
         // Welcome Screen
         composable(route = Screen.Welcome.route) {
             WelcomeScreen(
@@ -146,6 +168,7 @@ fun AppNavigation() {
  * Sealed class representing navigation destinations
  */
 sealed class Screen(val route: String) {
+    object Onboarding : Screen("onboarding")
     object Welcome : Screen("welcome")
     object Login : Screen("login")
     object Register : Screen("register")

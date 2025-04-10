@@ -78,14 +78,37 @@ class LoginViewModel @Inject constructor(
                     setEffect(LoginEffect.NavigateToHome(result.data))
                 }
                 is Result.Error -> {
-                    setState { 
-                        copy(
-                            isLoading = false,
-                            emailError = null,
-                            passwordError = null
-                        )
+                    val errorMessage = result.exception.message ?: "Неизвестная ошибка"
+                    
+                    // Обрабатываем разные типы ошибок
+                    when {
+                        errorMessage.contains("Неверный пароль") -> {
+                            setState { 
+                                copy(
+                                    isLoading = false,
+                                    passwordError = "Неверный пароль"
+                                )
+                            }
+                        }
+                        errorMessage.contains("Пользователь с таким email не существует") -> {
+                            setState { 
+                                copy(
+                                    isLoading = false,
+                                    emailError = "Пользователь с таким email не существует"
+                                )
+                            }
+                        }
+                        else -> {
+                            setState { 
+                                copy(
+                                    isLoading = false,
+                                    emailError = null,
+                                    passwordError = null
+                                )
+                            }
+                            setEffect(LoginEffect.ShowError(errorMessage))
+                        }
                     }
-                    setEffect(LoginEffect.ShowError(result.exception.message ?: "Неизвестная ошибка"))
                 }
                 is Result.Loading -> {
                     // Просто ждем, состояние загрузки уже установлено
@@ -99,18 +122,18 @@ class LoginViewModel @Inject constructor(
         var isValid = true
 
         if (currentState.email.isBlank()) {
-            setState { copy(emailError = "Email cannot be empty") }
+            setState { copy(emailError = "Email не может быть пустым") }
             isValid = false
         } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(currentState.email).matches()) {
-            setState { copy(emailError = "Please enter a valid email") }
+            setState { copy(emailError = "Пожалуйста, введите корректный email") }
             isValid = false
         }
 
         if (currentState.password.isBlank()) {
-            setState { copy(passwordError = "Password cannot be empty") }
+            setState { copy(passwordError = "Пароль не может быть пустым") }
             isValid = false
         } else if (currentState.password.length < 6) {
-            setState { copy(passwordError = "Password must be at least 6 characters") }
+            setState { copy(passwordError = "Пароль должен содержать не менее 6 символов") }
             isValid = false
         }
 
