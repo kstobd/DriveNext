@@ -8,7 +8,17 @@ import com.example.drivenext.util.PasswordUtils
 import java.util.Date
 
 /**
- * Room entity representing a user in the database
+ * Entity-класс для хранения информации о пользователе в базе данных
+ * @property id Уникальный идентификатор пользователя
+ * @property name Имя пользователя для входа в систему
+ * @property email Email пользователя
+ * @property phoneNumber Номер телефона
+ * @property password Хэшированный пароль
+ * @property firstName Имя
+ * @property lastName Фамилия
+ * @property middleName Отчество
+ * @property birthDate Дата рождения
+ * @property gender Пол пользователя
  */
 @Entity(
     tableName = "users",
@@ -17,10 +27,14 @@ import java.util.Date
 data class UserEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    
+    // Имя пользователя
     val name: String,
+    
+    // Электронная почта
     val email: String,
     val phoneNumber: String,
-    val password: String,
+    val password: String, // Хранится в хэшированном виде
     val firstName: String = "",
     val lastName: String = "",
     val middleName: String = "",
@@ -28,7 +42,7 @@ data class UserEntity(
     val gender: String = ""
 ) {
     /**
-     * Convert entity to domain model
+     * Преобразует entity в domain модель
      */
     fun toDomainModel(): User {
         return User(
@@ -47,7 +61,7 @@ data class UserEntity(
 
     companion object {
         /**
-         * Convert domain model to entity
+         * Создает entity из domain модели, хэширует пароль
          */
         fun fromDomainModel(user: User): UserEntity {
             return UserEntity(

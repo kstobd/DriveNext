@@ -14,7 +14,10 @@ import com.example.drivenext.data.local.entity.UserEntity
 import com.example.drivenext.utils.DateConverter
 
 /**
- * Main database class for the application
+ * Основной класс базы данных приложения
+ * @property userDao DAO для работы с пользователями
+ * @property carDao DAO для работы с автомобилями
+ * @property bookingDao DAO для работы с бронированиями
  */
 @Database(
     entities = [UserEntity::class, CarEntity::class, BookingEntity::class],
@@ -23,7 +26,7 @@ import com.example.drivenext.utils.DateConverter
 )
 @TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
-
+    // Абстрактные функции для доступа к DAO объектам
     abstract fun userDao(): UserDao
     abstract fun carDao(): CarDao
     abstract fun bookingDao(): BookingDao
@@ -32,6 +35,11 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        /**
+         * Создает или возвращает существующий экземпляр базы данных
+         * @param context Контекст приложения
+         * @return Экземпляр базы данных
+         */
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(

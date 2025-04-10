@@ -9,10 +9,18 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/**
+ * Модуль Dagger Hilt для предоставления зависимостей на уровне приложения
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
     
+    /**
+     * Предоставляет экземпляр UserPreferencesManager для управления пользовательскими настройками
+     * @param context Контекст приложения
+     * @return Экземпляр UserPreferencesManager
+     */
     @Provides
     @Singleton
     fun provideUserPreferencesManager(@ApplicationContext context: Context): UserPreferencesManager {

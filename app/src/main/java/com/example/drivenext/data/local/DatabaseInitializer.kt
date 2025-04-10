@@ -6,13 +6,15 @@ import kotlinx.coroutines.launch
 import com.example.drivenext.data.local.entity.CarEntity
 
 /**
- * Utility class for initializing the database with sample data
+ * Вспомогательный класс для инициализации базы данных тестовыми данными
  */
 class DatabaseInitializer {
     
     companion object {
         /**
-         * Preloads database with sample cars
+         * Предварительная загрузка базы данных тестовыми автомобилями.
+         * База заполняется только если она пустая.
+         * @param database Экземпляр базы данных для заполнения
          */
         fun preloadDatabase(database: AppDatabase) {
             val carDao = database.carDao()
@@ -32,7 +34,8 @@ class DatabaseInitializer {
         }
         
         /**
-         * Creates sample car data
+         * Создаёт список тестовых автомобилей для предварительной загрузки
+         * @return Список тестовых автомобилей
          */
         private fun getSampleCars(): List<CarEntity> {
             return listOf(

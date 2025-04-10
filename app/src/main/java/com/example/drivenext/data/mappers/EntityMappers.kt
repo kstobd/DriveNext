@@ -9,11 +9,11 @@ import com.example.drivenext.domain.model.Car
 import com.example.drivenext.domain.model.User
 
 /**
- * Mapper class for converting between entity and domain models
+ * Класс-маппер для конвертации между Entity и Domain моделями
  */
 object EntityMappers {
     
-    // User mappers
+    // Мапперы для User (Пользователя)
     fun mapUserEntityToDomain(entity: UserEntity): User {
         return User(
             id = entity.id,
@@ -34,7 +34,7 @@ object EntityMappers {
         return UserEntity.fromDomainModel(domain)
     }
     
-    // Car mappers
+    // Мапперы для Car (Автомобиля)
     fun mapCarEntityToDomain(entity: CarEntity): Car {
         return Car(
             id = entity.id,
@@ -61,7 +61,7 @@ object EntityMappers {
         )
     }
     
-    // Booking mappers
+    // Мапперы для Booking (Бронирования)
     fun mapBookingEntityToDomain(entity: BookingEntity): Booking {
         return Booking(
             id = entity.id,

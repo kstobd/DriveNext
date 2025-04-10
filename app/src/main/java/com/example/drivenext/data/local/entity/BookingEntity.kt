@@ -9,7 +9,14 @@ import com.example.drivenext.domain.model.BookingStatus
 import java.util.Date
 
 /**
- * Room entity representing a booking in the database
+ * Entity-класс для хранения информации о бронировании в базе данных
+ * @property id Уникальный идентификатор бронирования
+ * @property userId ID пользователя, создавшего бронирование
+ * @property carId ID забронированного автомобиля
+ * @property startDate Дата начала аренды
+ * @property endDate Дата окончания аренды
+ * @property totalPrice Общая стоимость аренды
+ * @property status Статус бронирования (PENDING, CONFIRMED, CANCELLED, COMPLETED)
  */
 @Entity(
     tableName = "bookings",
@@ -35,12 +42,24 @@ import java.util.Date
 data class BookingEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    
+    // ID пользователя, сделавшего бронирование
     val userId: Long,
+    
+    // ID забронированного автомобиля
     val carId: Long,
+    
+    // Дата начала аренды
     val startDate: Date,
+    
+    // Дата окончания аренды
     val endDate: Date,
+    
+    // Общая стоимость аренды
     val totalPrice: Double,
-    val status: String
+    
+    // Статус бронирования
+    val status: String // Строковое представление enum BookingStatus
 ) {
     /**
      * Convert entity to domain model

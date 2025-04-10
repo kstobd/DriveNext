@@ -5,7 +5,15 @@ import androidx.room.PrimaryKey
 import com.example.drivenext.domain.model.Car
 
 /**
- * Room entity representing a car in the database
+ * Entity-класс для хранения информации об автомобиле в базе данных
+ * @property id Уникальный идентификатор автомобиля
+ * @property brand Марка автомобиля
+ * @property model Модель автомобиля
+ * @property year Год выпуска
+ * @property pricePerDay Стоимость аренды за день
+ * @property description Описание автомобиля
+ * @property imageUrl URL изображения автомобиля
+ * @property isAvailable Доступность автомобиля для аренды
  */
 @Entity(tableName = "cars")
 data class CarEntity(
@@ -20,7 +28,7 @@ data class CarEntity(
     val isAvailable: Boolean
 ) {
     /**
-     * Convert entity to domain model
+     * Преобразует entity в domain модель
      */
     fun toDomainModel(): Car {
         return Car(
@@ -37,7 +45,7 @@ data class CarEntity(
 
     companion object {
         /**
-         * Convert domain model to entity
+         * Преобразует domain модель в entity
          */
         fun fromDomainModel(car: Car): CarEntity {
             return CarEntity(
