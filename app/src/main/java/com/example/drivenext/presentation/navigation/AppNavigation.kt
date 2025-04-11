@@ -15,10 +15,13 @@ import androidx.navigation.navArgument
 import com.example.drivenext.domain.model.User
 import com.example.drivenext.presentation.screen.CarListScreen
 import com.example.drivenext.presentation.screen.LoginScreen
+import com.example.drivenext.presentation.screen.MainScreen
 import com.example.drivenext.presentation.screen.OnboardingScreen
+import com.example.drivenext.presentation.screen.ProfileScreen
 import com.example.drivenext.presentation.screen.RegisterScreen
 import com.example.drivenext.presentation.screen.RegisterStep2Screen
 import com.example.drivenext.presentation.screen.RegisterStep3Screen
+import com.example.drivenext.presentation.screen.SettingsScreen
 import com.example.drivenext.presentation.screen.WelcomeScreen
 import com.example.drivenext.presentation.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
@@ -42,7 +45,7 @@ fun AppNavigation() {
     
     // Определяем начальный экран на основе состояния приложения
     val startDestination = when {
-        onboardingViewModel.hasValidToken() -> Screen.CarList.createRoute(0) // Сразу к списку авто если есть токен
+        onboardingViewModel.hasValidToken() -> Screen.Main.createRoute(0) // Сразу к главному экрану если есть токен
         !onboardingViewModel.isOnboardingCompleted() -> Screen.Onboarding.route // К онбордингу если не пройден
         else -> Screen.Welcome.route // К приветственному экрану в остальных случаях
     }
@@ -85,8 +88,8 @@ fun AppNavigation() {
                     navController.navigate(Screen.Register.route)
                 },
                 onNavigateToHome = { user ->
-                    // Navigate to home screen and pass user ID
-                    navController.navigate(Screen.CarList.createRoute(user.id)) {
+                    // Navigate to main screen and pass user ID
+                    navController.navigate(Screen.Main.createRoute(user.id)) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -141,7 +144,7 @@ fun AppNavigation() {
             RegisterStep2Screen(
                 userId = userId,
                 onNavigateToHome = { 
-                    navController.navigate(Screen.CarList.createRoute(userId)) {
+                    navController.navigate(Screen.Main.createRoute(userId)) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
@@ -175,7 +178,7 @@ fun AppNavigation() {
             RegisterStep3Screen(
                 userId = userId,
                 onNavigateToHome = { 
-                    navController.navigate(Screen.CarList.createRoute(userId)) {
+                    navController.navigate(Screen.Main.createRoute(userId)) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
@@ -195,7 +198,18 @@ fun AppNavigation() {
             )
         }
 
-        // Car List Screen
+        // Main Screen с нижней навигацией
+        composable(
+            route = Screen.Main.route + "/{userId}",
+            arguments = listOf(
+                navArgument("userId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getLong("userId") ?: 0L
+            MainScreen(userId = userId)
+        }
+        
+        // Car List Screen (теперь будет встроен в MainScreen)
         composable(
             route = Screen.CarList.route + "/{userId}",
             arguments = listOf(
@@ -243,6 +257,39 @@ fun AppNavigation() {
             // We'll implement this screen later
             // BookingListScreen(userId = userId)
         }
+        
+        // Settings Screen
+        // Изменяем определение экрана настроек, чтобы добавить userId параметр
+        composable(
+            route = Screen.Settings.route + "/{userId}",
+            arguments = listOf(
+                navArgument("userId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getLong("userId") ?: 0L
+            SettingsScreen(
+                userId = userId,
+                onNavigateToProfile = { profileUserId ->
+                    navController.navigate(Screen.Profile.createRoute(profileUserId))
+                }
+            )
+        }
+        
+        // Profile Screen
+        composable(
+            route = Screen.Profile.route + "/{userId}",
+            arguments = listOf(
+                navArgument("userId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getLong("userId") ?: 0L
+            ProfileScreen(
+                userId = userId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
@@ -274,6 +321,11 @@ sealed class Screen(val route: String) {
         fun createRoute(userId: Long): String = "$route/$userId"
     }
     
+    /** Основной экран приложения с нижней навигацией */
+    object Main : Screen("main") {
+        fun createRoute(userId: Long): String = "$route/$userId"
+    }
+    
     /** Экран со списком доступных автомобилей */
     object CarList : Screen("car_list") {
         fun createRoute(userId: Long): String = "$route/$userId"
@@ -286,6 +338,16 @@ sealed class Screen(val route: String) {
     
     /** Экран со списком бронирований пользователя */
     object BookingList : Screen("booking_list") {
+        fun createRoute(userId: Long): String = "$route/$userId"
+    }
+    
+    /** Экран настроек */
+    object Settings : Screen("settings") {
+        fun createRoute(userId: Long): String = "$route/$userId"
+    }
+    
+    /** Экран профиля пользователя */
+    object Profile : Screen("profile") {
         fun createRoute(userId: Long): String = "$route/$userId"
     }
 }
