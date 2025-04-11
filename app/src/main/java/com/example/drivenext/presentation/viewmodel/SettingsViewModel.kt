@@ -1,5 +1,6 @@
 package com.example.drivenext.presentation.viewmodel
 
+import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope
 import com.example.drivenext.domain.model.User
 import com.example.drivenext.domain.repository.UserRepository
@@ -15,13 +16,15 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sharedPreferences: SharedPreferences
 ) : BaseViewModel<SettingsViewModel.SettingsState, SettingsViewModel.SettingsEvent, SettingsViewModel.SettingsEffect>() {
 
     data class SettingsState(
         val user: User? = null,
         val isLoading: Boolean = false,
-        val error: String? = null
+        val error: String? = null,
+        val userPhotoUri: String? = null
     )
 
     sealed class SettingsEvent {
@@ -41,6 +44,7 @@ class SettingsViewModel @Inject constructor(
         when (event) {
             is SettingsEvent.LoadUserData -> {
                 loadUserData(event.userId)
+                loadUserPhoto(event.userId)
             }
             is SettingsEvent.ProfileClicked -> {
                 state.value.user?.let { user ->
@@ -55,6 +59,9 @@ class SettingsViewModel @Inject constructor(
      */
     private fun loadUserData(userId: Long) {
         setState { copy(isLoading = true, error = null) }
+        
+        // Для тестирования - сохраняем тестовую фотографию
+        testSavePhoto(userId)
         
         viewModelScope.launch {
             when (val result = userRepository.getUserById(userId)) {
@@ -75,5 +82,34 @@ class SettingsViewModel @Inject constructor(
                 }
             }
         }
+    }
+    
+    /**
+     * Тестовая функция для сохранения изображения
+     * Только для отладки проблемы с фотографией
+     */
+    private fun testSavePhoto(userId: Long) {
+        // Сохраняем тестовый URI
+        val testUri = "content://com.android.providers.media.documents/document/image%3A12345"
+        val photoKey = "user_photo_$userId"
+        
+        android.util.Log.d("SettingsViewModel", "Saving test photo URI: $testUri for key: $photoKey")
+        
+        sharedPreferences.edit()
+            .putString(photoKey, testUri)
+            .apply()
+    }
+    
+    /**
+     * Загружает фотографию пользователя из SharedPreferences
+     */
+    private fun loadUserPhoto(userId: Long) {
+        val photoKey = "user_photo_$userId"
+        val photoUri = sharedPreferences.getString(photoKey, null)
+        
+        // Добавляем отладочный вывод
+        android.util.Log.d("SettingsViewModel", "Loading user photo for userId=$userId, key=$photoKey, photoUri=$photoUri")
+        
+        setState { copy(userPhotoUri = photoUri) }
     }
 }

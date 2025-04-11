@@ -49,6 +49,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.drivenext.data.local.UserPreferencesManager
 import com.example.drivenext.presentation.viewmodel.SettingsViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import android.net.Uri
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Экран настроек пользователя
@@ -110,10 +115,19 @@ fun SettingsScreen(
                 ProfileSection(
                     name = "${state.user?.lastName ?: ""} ${state.user?.firstName ?: ""} ${state.user?.middleName ?: ""}".trim(),
                     email = state.user?.email ?: "",
+                    userPhotoUri = state.userPhotoUri,
                     onProfileClick = { 
                         viewModel.handleEvent(SettingsViewModel.SettingsEvent.ProfileClicked)
                     }
                 )
+                
+                // Отладочная информация - для поиска проблемы с фото
+                // Text(
+                    // text = "Debug: Photo URI = ${state.userPhotoUri ?: "NULL"}",
+                //     style = MaterialTheme.typography.bodySmall,
+                //     color = MaterialTheme.colorScheme.error,
+                //     modifier = Modifier.padding(horizontal = 16.dp)
+                // )
                 
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                 
@@ -175,6 +189,7 @@ fun SettingsScreen(
 fun ProfileSection(
     name: String,
     email: String,
+    userPhotoUri: String? = null,
     onProfileClick: () -> Unit
 ) {
     Row(
@@ -193,12 +208,24 @@ fun ProfileSection(
                 .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Аватар",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
-            )
+            if (userPhotoUri != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(Uri.parse(userPhotoUri))
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Фото профиля",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Аватар",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
         
         Column(

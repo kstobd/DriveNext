@@ -1,5 +1,6 @@
 package com.example.drivenext.presentation.viewmodel
 
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.example.drivenext.domain.repository.UserRepository
@@ -16,7 +17,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RegisterStep3ViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sharedPreferences: SharedPreferences
 ) : BaseViewModel<RegisterStep3ViewModel.RegisterStep3State, RegisterStep3ViewModel.RegisterStep3Event, RegisterStep3ViewModel.RegisterStep3Effect>() {
 
     data class RegisterStep3State(
@@ -64,7 +66,13 @@ class RegisterStep3ViewModel @Inject constructor(
                 setState { copy(driverLicenseIssueDate = event.date, licenseDateError = null) }
             }
             is RegisterStep3Event.ProfileImageSelected -> {
-                setState { copy(profileImageUri = event.uri) }
+                val uri = event.uri
+                setState { copy(profileImageUri = uri) }
+                
+                // Сохраняем URI фотографии профиля в SharedPreferences
+                if (uri != null && state.value.userId > 0) {
+                    saveProfileImageUri(state.value.userId, uri.toString())
+                }
             }
             is RegisterStep3Event.DriverLicenseImageSelected -> {
                 setState { copy(driverLicenseImageUri = event.uri, documentsError = null) }
@@ -79,6 +87,15 @@ class RegisterStep3ViewModel @Inject constructor(
                 setEffect(RegisterStep3Effect.NavigateBack)
             }
         }
+    }
+
+    /**
+     * Сохраняет URI фотографии профиля в SharedPreferences
+     */
+    private fun saveProfileImageUri(userId: Long, uriString: String) {
+        sharedPreferences.edit()
+            .putString("user_photo_$userId", uriString)
+            .apply()
     }
 
     /**
@@ -101,6 +118,11 @@ class RegisterStep3ViewModel @Inject constructor(
                 when (val result = userRepository.getUserById(currentState.userId)) {
                     is Result.Success -> {
                         val user = result.data
+                        
+                        // Сохраняем фотографию профиля в SharedPreferences, если она была выбрана
+                        currentState.profileImageUri?.let { 
+                            saveProfileImageUri(currentState.userId, it.toString())
+                        }
                         
                         // Обновляем данные пользователя с информацией о документах
                         // В реальном приложении здесь должна быть загрузка файлов на сервер

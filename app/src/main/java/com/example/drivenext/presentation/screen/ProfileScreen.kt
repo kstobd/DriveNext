@@ -1,5 +1,6 @@
 package com.example.drivenext.presentation.screen
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -34,8 +35,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.drivenext.presentation.viewmodel.ProfileViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -108,12 +113,24 @@ fun ProfileScreen(
                             .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Аватар",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(60.dp)
-                        )
+                        if (state.userPhotoUri != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(Uri.parse(state.userPhotoUri))
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = "Фото профиля",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Аватар",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(60.dp)
+                            )
+                        }
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -134,12 +151,6 @@ fun ProfileScreen(
                         title = "Электронная почта",
                         value = state.user?.email ?: ""
                     )
-                    
-                    ProfileInfoItem(
-                        title = "Телефон",
-                        value = state.user?.phoneNumber ?: ""
-                    )
-                    
                     ProfileInfoItem(
                         title = "Пол",
                         value = when (state.user?.gender) {

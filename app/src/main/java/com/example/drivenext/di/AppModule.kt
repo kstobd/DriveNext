@@ -1,6 +1,7 @@
 package com.example.drivenext.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.example.drivenext.data.local.UserPreferencesManager
 import dagger.Module
 import dagger.Provides
@@ -25,5 +26,16 @@ object AppModule {
     @Singleton
     fun provideUserPreferencesManager(@ApplicationContext context: Context): UserPreferencesManager {
         return UserPreferencesManager(context)
+    }
+    
+    /**
+     * Предоставляет экземпляр SharedPreferences для хранения данных приложения
+     * @param context Контекст приложения
+     * @return Экземпляр SharedPreferences
+     */
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        return context.getSharedPreferences("drivenext_preferences", Context.MODE_PRIVATE)
     }
 }

@@ -1,5 +1,6 @@
 package com.example.drivenext.presentation.viewmodel
 
+import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope
 import com.example.drivenext.domain.model.User
 import com.example.drivenext.domain.repository.UserRepository
@@ -13,13 +14,15 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sharedPreferences: SharedPreferences
 ) : BaseViewModel<ProfileViewModel.ProfileState, ProfileViewModel.ProfileEvent, ProfileViewModel.ProfileEffect>() {
 
     data class ProfileState(
         val user: User? = null,
         val isLoading: Boolean = false,
-        val error: String? = null
+        val error: String? = null,
+        val userPhotoUri: String? = null
     )
 
     sealed class ProfileEvent {
@@ -36,6 +39,7 @@ class ProfileViewModel @Inject constructor(
         when (event) {
             is ProfileEvent.LoadUserData -> {
                 loadUserData(event.userId)
+                loadUserPhoto(event.userId)
             }
         }
     }
@@ -65,5 +69,18 @@ class ProfileViewModel @Inject constructor(
                 }
             }
         }
+    }
+    
+    /**
+     * Загружает фотографию пользователя из SharedPreferences
+     */
+    private fun loadUserPhoto(userId: Long) {
+        val photoKey = "user_photo_$userId"
+        val photoUri = sharedPreferences.getString(photoKey, null)
+        
+        // Добавляем отладочный вывод
+        android.util.Log.d("ProfileViewModel", "Loading user photo for userId=$userId, key=$photoKey, photoUri=$photoUri")
+        
+        setState { copy(userPhotoUri = photoUri) }
     }
 }

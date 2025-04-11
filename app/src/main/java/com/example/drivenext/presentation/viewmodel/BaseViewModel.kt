@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 /**
- * Базовый класс ViewModel, реализующий паттерн MVI (Model-View-Intent).
+ * Базовый класс ViewModel.
  * Предоставляет общий функционал для всех ViewModel в приложении:
  * - Управление состоянием через State
  * - Обработка событий через Event
