@@ -4,6 +4,8 @@
 
 DriveNext - это мобильное приложение для аренды автомобилей, разработанное на платформе Android с использованием современных технологий и архитектурных подходов. Приложение позволяет пользователям просматривать доступные автомобили, бронировать их на определенные даты, управлять своими бронированиями и профилем.
 
+https://github.com/user-attachments/assets/baf4ef3d-572b-4e4f-ad47-33f42653781b
+
 ## Требования к приложению
 
 - **Минимальная версия Android:** 11.0 (API 30)
@@ -51,36 +53,50 @@ com.example.drivenext/
 - **cars** - информация об автомобилях
 - **bookings** - информация о бронированиях
 
+
+
+
+
+
+
+
+
+
 ### Экраны приложения
 
 1. **OnboardingScreen** - экран онбординга для новых пользователей
-![image](https://github.com/user-attachments/assets/60ca3208-d8e4-4845-bb0b-3bb80045b2da)
+<img src="https://github.com/user-attachments/assets/7cb91c4b-9bac-4fc2-abd5-be9dde0bd8b0" width="200" alt="OnboardingScreen">
+
 
 2. **WelcomeScreen** - приветственный экран
+<img src="https://github.com/user-attachments/assets/9fb96119-62b6-4a67-92af-2cbc38fe5d81" width="200" alt="Welcome">
+
 
 3. **LoginScreen** - экран входа
+<img src="https://github.com/user-attachments/assets/a638a482-d390-45f1-b59d-90afbf4a1e20" width="200" alt="Login">
 
 4. **RegisterScreen** - многоэтапная регистрация пользователя:
    - Ввод основной информации (email, имя, пароль)
+<img src="https://github.com/user-attachments/assets/04aa54ff-2fc8-4393-b3a8-180abd9f6b4d" width="200" alt="Reg1">
 
    - Ввод персональных данных (имя, фамилия, дата рождения)
+<img src="https://github.com/user-attachments/assets/308f7caa-a6c1-4e5c-aea0-e6024fce9516" width="200" alt="Reg2">
 
    - Загрузка документов (водительские права)
-     
-6. **MainScreen** - основной экран с нижней навигационной панелью
+<img src="https://github.com/user-attachments/assets/30cf8fcb-d1e0-4440-8d71-1a39a4c5de6d" width="200" alt="Reg3">
 
-7. **CarListScreen** - список доступных автомобилей
+6. **CarListScreen** - список доступных автомобилей
+<img src="https://github.com/user-attachments/assets/ad82b7a0-a8a1-44e9-8417-483c45812511" width="200" alt="CarList">
 
-8. **CarDetailScreen** - детальная информация об автомобиле и бронирование
 
-9. **BookingListScreen** - список бронирований пользователя
+9. **ProfileScreen** - профиль пользователя
+<img src="https://github.com/user-attachments/assets/67d686cc-0565-4484-a662-87ef1bcf4aa7" width="200" alt="Profile">
 
-10. **ProfileScreen** - профиль пользователя
+10. **SettingsScreen** - настройки приложения
+<img src="https://github.com/user-attachments/assets/a7bdbb98-7b7a-473e-9a3e-5a6867a788c9" width="200" alt="Settings">
 
-11. **SettingsScreen** - настройки приложения
-
-12. **NoConnectionScreen** - экран при отсутствии интернет-соединения
-
+11. **NoConnectionScreen** - экран при отсутствии интернет-соединения
+<img src="https://github.com/user-attachments/assets/ad092533-4c93-478d-821b-ace0a5eb423a" width="200" alt="NoInternet">
 
 ## Используемые технологии
 
